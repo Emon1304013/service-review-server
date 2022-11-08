@@ -11,7 +11,7 @@ app.use(express.json())
 
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@cluster0.ph4ajav.mongodb.net/?retryWrites=true&w=majority`;
-console.log(uri);
+// console.log(uri);
 
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
 
@@ -36,7 +36,7 @@ const Review = client.db("rozasFusion").collection("reviews");
 //get services
 app.get('/services',async(req,res)=>{
   const cursor = Service.find({})
-  const result = await cursor.toArray();
+  const result = await cursor.sort({'_id': -1}).limit(3).toArray();
   if(result){
     res.send({
       success:true,
