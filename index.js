@@ -142,6 +142,29 @@ app.post('/add-review',async(req,res)=>{
   }
 })
 
+// Get Review 
+
+app.get('/reviews/:id',async(req,res)=> {
+  const id = req.params.id;
+
+  const query = { serviceId: id}
+  const cursor = Review.find(query)
+  const result = await cursor.toArray();
+  
+  if(result){
+    res.send({
+      success:true,
+      data:result,
+    })
+  }
+  else{
+    res.send({
+      success:false,
+      error:"No Data Found",
+    })
+  }
+})
+
 app.get('/', (req, res) => {
   res.send(`Welcome to Roza's flavor fusion`)
 })
