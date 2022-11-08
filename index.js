@@ -32,16 +32,34 @@ dbConnect();
 const Service = client.db("rozasFusion").collection("services");
 const Review = client.db("rozasFusion").collection("reviews");
 
-//Post services
 
+//get services
+app.get('/services',async(req,res)=>{
+  const cursor = Service.find({})
+  const result = await cursor.toArray();
+  if(result){
+    res.send({
+      success:true,
+      data:result,
+    })
+  }
+  else{
+    res.send({
+      success:false,
+      error:"No Data Found",
+    })
+  }
+})
+
+//Post services
 app.post('/add-service',async(req,res)=>{
   try{
     const result = await Service.insertOne(req.body)
-    console.log(result);
+    console.log(req.body);
     if(result.insertedId){
       res.send({
         success: true,
-        message: `Inserted service with id ${result.insertedId}`
+        message: `Inserted service ${req.body.serviceName} with id ${result.insertedId}`
       })
     }
     else{
