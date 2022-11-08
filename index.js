@@ -1,6 +1,6 @@
 const express = require('express')
 const cors = require('cors')
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 require("dotenv").config();
 const app = express()
 const port = process.env.PORT || 5000
@@ -34,9 +34,47 @@ const Review = client.db("rozasFusion").collection("reviews");
 
 
 //get services
-app.get('/services',async(req,res)=>{
+app.get('/limitedServices',async(req,res)=>{
   const cursor = Service.find({})
   const result = await cursor.sort({'_id': -1}).limit(3).toArray();
+  if(result){
+    res.send({
+      success:true,
+      data:result,
+    })
+  }
+  else{
+    res.send({
+      success:false,
+      error:"No Data Found",
+    })
+  }
+})
+
+app.get('/services',async(req,res)=>{
+  const cursor = Service.find({})
+  const result = await cursor.sort({'_id': -1}).toArray();
+  if(result){
+    res.send({
+      success:true,
+      data:result,
+    })
+  }
+  else{
+    res.send({
+      success:false,
+      error:"No Data Found",
+    })
+  }
+})
+
+// Get Single Item 
+
+app.get('/services/:id',async(req,res)=>{
+  const id = req.params.id;
+  const query = {_id: ObjectId(id)}
+  const result = await Service.findOne(query);
+  console.log(result);
   if(result){
     res.send({
       success:true,
@@ -77,6 +115,32 @@ app.post('/add-service',async(req,res)=>{
   }
 })
 
+// Post Reviews 
+
+app.post('/add-review',async(req,res)=>{
+  try{
+    const result = await Review.insertOne(req.body)
+    // console.log(req.body);
+    if(result.insertedId){
+      res.send({
+        success: true,
+        message: `Inserted Review of ${req.body.reviewerName} with id ${result.insertedId}`
+      })
+    }
+    else{
+      res.send({
+        success:false,
+        error:"Couldn't Insert the service"
+      })
+    }
+  }
+  catch(error){
+    res.send({
+      success: false,
+      error: error.message
+    })
+  }
+})
 
 app.get('/', (req, res) => {
   res.send(`Welcome to Roza's flavor fusion`)
