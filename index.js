@@ -168,11 +168,8 @@ app.get('/reviews/:id',async(req,res)=> {
 //Get customer reviews by customer email
 
 app.get('/user-reviews/:email',async(req,res)=>{
-  console.log(req.params);
   const email = req.params.email;
-  console.log(email);
-
-  const query = { reviewerName: email}
+  const query = { reviewerEmail: email}
   const cursor = Review.find(query)
   const result = await cursor.toArray();
 
@@ -186,6 +183,26 @@ app.get('/user-reviews/:email',async(req,res)=>{
     res.send({
       success:false,
       error:"No Data Found",
+    })
+  }
+})
+
+//Delete Customer review
+
+app.delete('/user-reviews/:id',async(req,res)=>{
+  const reviewId = req.params.id;
+  const query = {_id: ObjectId(reviewId)}
+  const result = await Review.deleteOne(query);
+  if(result.deletedCount){
+    res.send({
+      success:true,
+      message:"Deleted Successfully"
+    })
+  }
+  else{
+    res.send({
+      success:false,
+      error:"Something Went Wrong. Please try again"
     })
   }
 })
