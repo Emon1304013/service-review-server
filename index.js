@@ -2,6 +2,7 @@ const express = require('express')
 const cors = require('cors')
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 require("dotenv").config();
+const jwt = require('jsonwebtoken')
 const app = express()
 const port = process.env.PORT || 5000
 
@@ -32,6 +33,13 @@ dbConnect();
 const Service = client.db("rozasFusion").collection("services");
 const Review = client.db("rozasFusion").collection("reviews");
 
+// generate jwt Token and send to client
+
+app.post('/jwt',(req,res)=>{
+  const user = req.body;
+  const token = jwt.sign(user,process.env.JWT_SECRET)
+  res.send({token})
+})
 
 //get services
 app.get('/limitedServices',async(req,res)=>{
@@ -196,7 +204,7 @@ app.delete('/user-reviews/:id',async(req,res)=>{
   if(result.deletedCount){
     res.send({
       success:true,
-      message:"Deleted Successfully"
+      message:"Review Deleted Successfully"
     })
   }
   else{
@@ -204,6 +212,35 @@ app.delete('/user-reviews/:id',async(req,res)=>{
       success:false,
       error:"Something Went Wrong. Please try again"
     })
+  }
+})
+
+// Update Customer Review 
+
+app.patch('/user-reviews/:id',async(req,res)=>{
+  const id = req.params.id;
+  try{
+    const filter = { _id : ObjectId(id) }
+    // const options = { upsert: true };
+    const updatedDoc = {
+      $set:req.body,
+    }
+    const result = await Review.updateOne(filter,updatedDoc);
+    if(result.matchedCount){
+      res.send({
+        success:true,
+        message:"Successfully Updated your review"
+      })
+    }
+    else{
+      res.send({
+        success:false,
+        error:"Couldn't update the review"
+      })
+    }
+  }
+  catch(error){
+    res.send(error.message)
   }
 })
 
