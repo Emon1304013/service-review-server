@@ -142,15 +142,40 @@ app.post('/add-review',async(req,res)=>{
   }
 })
 
-// Get Review 
+// Get Review by serviceid
 
 app.get('/reviews/:id',async(req,res)=> {
   const id = req.params.id;
 
   const query = { serviceId: id}
   const cursor = Review.find(query)
+  const result = await cursor.sort({'_id': -1}).toArray();
+
+  if(result){
+    res.send({
+      success:true,
+      data:result,
+    })
+  }
+  else{
+    res.send({
+      success:false,
+      error:"No Data Found",
+    })
+  }
+})
+
+//Get customer reviews by customer email
+
+app.get('/user-reviews/:email',async(req,res)=>{
+  console.log(req.params);
+  const email = req.params.email;
+  console.log(email);
+
+  const query = { reviewerName: email}
+  const cursor = Review.find(query)
   const result = await cursor.toArray();
-  
+
   if(result){
     res.send({
       success:true,
