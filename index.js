@@ -195,7 +195,7 @@ app.get("/user-reviews/:email", verifyJWT, async (req, res) => {
   }
   const query = { reviewerEmail: email };
   const cursor = Review.find(query);
-  const result = await cursor.toArray();
+  const result = await cursor.sort({ created: -1 }).toArray();
 
   if (result) {
     res.send({
