@@ -3,7 +3,7 @@ const cors = require("cors");
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 require("dotenv").config();
 const jwt = require("jsonwebtoken");
-const { verifyJWT } = require("./middlewares/auth");
+const verifyJWT = require("./middlewares/verifyJWT");
 const app = express();
 const port = process.env.PORT || 5000;
 
@@ -20,6 +20,23 @@ const client = new MongoClient(uri, {
 });
 
 // Verify JWT
+
+// function verifyJWT(req, res, next) {
+//   const authHeader = req.headers.authorization;
+
+//   if (!authHeader) {
+//     return res.status(401).send({ message: "unauthorized access" });
+//   }
+//   const token = authHeader.split(" ")[1];
+
+//   jwt.verify(token, process.env.JWT_SECRET, function (err, decoded) {
+//     if (err) {
+//       return res.status(403).send({ message: "Forbidden access" });
+//     }
+//     req.decoded = decoded;
+//     next();
+//   });
+// }
 
 //Database Connection
 async function dbConnect() {
@@ -47,7 +64,7 @@ app.post("/jwt", (req, res) => {
 //get services
 app.get("/limitedServices", async (req, res) => {
   const cursor = Service.find({});
-  const result = await cursor.sort({ _id: -1 }).limit(3).toArray();
+  const result = await cursor.sort({ created: -1 }).limit(3).toArray();
   if (result) {
     res.send({
       success: true,
@@ -63,7 +80,7 @@ app.get("/limitedServices", async (req, res) => {
 
 app.get("/services", async (req, res) => {
   const cursor = Service.find({});
-  const result = await cursor.sort({ _id: -1 }).toArray();
+  const result = await cursor.sort({ created: -1 }).toArray();
   if (result) {
     res.send({
       success: true,
@@ -151,7 +168,7 @@ app.get("/reviews/:id", async (req, res) => {
 
   const query = { serviceId: id };
   const cursor = Review.find(query);
-  const result = await cursor.sort({ _id: -1 }).toArray();
+  const result = await cursor.sort({ created: -1 }).toArray();
 
   if (result) {
     res.send({
