@@ -3,6 +3,7 @@ const cors = require("cors");
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 require("dotenv").config();
 const jwt = require("jsonwebtoken");
+const { verifyJWT } = require("./middlewares/auth");
 const app = express();
 const port = process.env.PORT || 5000;
 
@@ -10,7 +11,7 @@ app.use(cors());
 app.use(express.json());
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@cluster0.ph4ajav.mongodb.net/?retryWrites=true&w=majority`;
-// console.log(uri);
+
 
 const client = new MongoClient(uri, {
   useNewUrlParser: true,
@@ -20,28 +21,10 @@ const client = new MongoClient(uri, {
 
 // Verify JWT
 
-function verifyJWT(req, res, next) {
-  const authHeader = req.headers.authorization;
-
-  if (!authHeader) {
-    return res.status(401).send({ message: "unauthorized access" });
-  }
-  const token = authHeader.split(" ")[1];
-
-  jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, function (err, decoded) {
-    if (err) {
-      return res.status(403).send({ message: "Forbidden access" });
-    }
-    req.decoded = decoded;
-    next();
-  });
-}
-
 //Database Connection
 async function dbConnect() {
   try {
     client.connect();
-    console.log("Database Connected");
   } catch (err) {
     console.log(err.name);
   }
@@ -118,7 +101,6 @@ app.get("/services/:id", async (req, res) => {
 app.post("/add-service", async (req, res) => {
   try {
     const result = await Service.insertOne(req.body);
-    console.log(req.body);
     if (result.insertedId) {
       res.send({
         success: true,
@@ -143,7 +125,6 @@ app.post("/add-service", async (req, res) => {
 app.post("/add-review", async (req, res) => {
   try {
     const result = await Review.insertOne(req.body);
-    // console.log(req.body);
     if (result.insertedId) {
       res.send({
         success: true,
@@ -191,7 +172,8 @@ app.get("/user-reviews/:email", verifyJWT, async (req, res) => {
   const email = req.params.email;
   const decoded = req.decoded;
 
-  if (decoded.email !== req.query.email) {
+
+  if (decoded.email !== req.params.email) {
     res.status(403).send({ message: "unauthorized access" });
   }
   const query = { reviewerEmail: email };
@@ -236,7 +218,6 @@ app.patch("/user-reviews/:id", async (req, res) => {
   const id = req.params.id;
   try {
     const filter = { _id: ObjectId(id) };
-    // const options = { upsert: true };
     const updatedDoc = {
       $set: req.body,
     };
